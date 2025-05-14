@@ -1,0 +1,49 @@
+#!/bin/bash
+
+TFFY_EXECUTABLE_PATH=$(readlink -f "${BASH_SOURCE[0]}")
+TFFY_DIR=$(dirname "$TFFY_EXECUTABLE_PATH")
+
+SCRIPTS_DIR="$TFFY_DIR/scripts"
+
+if [ "$TFFY_EXECUTABLE_PATH" = "/usr/local/bin/tffy" ]; then
+    SCRIPTS_DIR="/usr/local/share/tffy/scripts"
+fi
+
+if [ ! -d "$SCRIPTS_DIR" ]; then
+    echo "Error: The 'scripts' directory does not exist."
+    echo "Expected location: $SCRIPTS_DIR"
+    echo "If running locally, ensure './scripts' directory exists relative to tffy."
+    echo "If installed, it should be at /usr/local/share/tffy/scripts."
+    exit 1
+fi
+
+if [ -z "$1" ]; then
+    echo "Available scripts in '$SCRIPTS_DIR':"
+    ls -1 "$SCRIPTS_DIR" | sed 's/\.sh$//' 
+    echo -e "\nUsage: tffy <script_name> [script_args...]"
+    exit 0
+fi
+
+SCRIPT_NAME="$1"
+SCRIPT_PATH="$SCRIPTS_DIR/$SCRIPT_NAME.sh"
+
+if [ ! -f "$SCRIPT_PATH" ]; then
+    SCRIPT_PATH_NO_EXT="$SCRIPTS_DIR/$SCRIPT_NAME"
+    if [ -f "$SCRIPT_PATH_NO_EXT" ] && [[ "$SCRIPT_NAME" == *.sh ]]; then
+        SCRIPT_PATH="$SCRIPT_PATH_NO_EXT"
+    else
+        echo "Error: Script '$SCRIPT_NAME' not found in '$SCRIPTS_DIR'."
+        echo "Available scripts:"
+        ls -1 "$SCRIPTS_DIR" | sed 's/\.sh$//'
+        exit 1
+    fi
+fi
+
+if [ ! -x "$SCRIPT_PATH" ]; then
+    echo "Error: Script '$SCRIPT_PATH' is not executable. Please run 'chmod +x $SCRIPT_PATH'."
+    exit 1
+fi
+
+shift
+echo "Executing: $SCRIPT_PATH $@"
+"$SCRIPT_PATH" "$@"
