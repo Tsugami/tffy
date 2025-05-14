@@ -29,7 +29,7 @@ warning() {
 }
 
 
-if [ $
+if [ $# -lt 1 ]; then
     error "Uso: $0 <nome-do-modulo> [descrição-do-módulo]"
 fi
 
