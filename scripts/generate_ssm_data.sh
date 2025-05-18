@@ -1,7 +1,7 @@
+#!/bin/bash
 
-
-
-if [ $
+# Check if a directory argument is provided
+if [ $# -ne 1 ]; then
     echo "Usage: $0 <terraform-directory>"
     echo "Example: $0 ../02-eks-vanilla"
     exit 1
@@ -34,7 +34,7 @@ grep -n "variable \"ssm_" "${TERRAFORM_DIR}/variables.tf" | while read -r line; 
     if is_list_type "${TERRAFORM_DIR}/variables.tf" "$var_name"; then
         
         cat >> "${TERRAFORM_DIR}/data.tf" << EOF
-data "aws_ssm_parameter" "${var_name
+data "aws_ssm_parameter" "${var_name}" {
   count = length(var.${var_name})
   name  = var.${var_name}[count.index]
 }
@@ -43,7 +43,7 @@ EOF
     else
         
         cat >> "${TERRAFORM_DIR}/data.tf" << EOF
-data "aws_ssm_parameter" "${var_name
+data "aws_ssm_parameter" "${var_name}" {
   name = var.${var_name}
 }
 
