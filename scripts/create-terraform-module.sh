@@ -109,22 +109,6 @@ cat > "$MODULE_DIR/outputs.tf" << EOF
 
 EOF
 
-
-chmod +x "$0"
-
-
-if ! command -v terraform-docs &> /dev/null; then
-    warning "terraform-docs não está instalado. Instalando..."
-    if command -v brew &> /dev/null; then
-        brew install terraform-docs
-    elif command -v apt-get &> /dev/null; then
-        sudo apt-get update && sudo apt-get install -y terraform-docs
-    else
-        warning "Não foi possível instalar terraform-docs automaticamente. Por favor, instale manualmente."
-    fi
-fi
-
-
 if [ ! -d "$MODULE_DIR" ]; then
     error "O diretório do módulo '$MODULE_DIR' não foi criado corretamente."
 fi
@@ -134,8 +118,10 @@ info "Formatando arquivos Terraform..."
 cd "$MODULE_DIR" && terraform fmt
 
 
-info "Gerando documentação com terraform-docs..."
-cd "$MODULE_DIR" && terraform-docs --output-file README.md .
+if command -v terraform-docs &> /dev/null; then
+  info "Gerando documentação com terraform-docs..."
+  cd "$MODULE_DIR" && terraform-docs --output-file README.md .
+fi
 
 success "Módulo '$MODULE_NAME' criado com sucesso em $MODULE_DIR"
 info "Estrutura criada:"
