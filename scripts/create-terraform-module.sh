@@ -75,30 +75,6 @@ EOF
 
 
 cat > "$MODULE_DIR/variables.tf" << EOF
-
-
-
-variable "project_name" {
-  type        = string
-  description = "Nome do projeto, usado para nomear recursos e tags. Deve ser único dentro da conta AWS."
-}
-
-variable "environment" {
-  type        = string
-  description = "Ambiente (dev, staging, prod, etc)."
-  default     = "dev"
-}
-
-variable "region" {
-  type        = string
-  description = "Região AWS onde os recursos serão criados (ex: us-east-1, eu-west-1). Deve ser uma região AWS válida."
-}
-
-variable "tags" {
-  type        = map(string)
-  description = "Tags adicionais para aplicar aos recursos."
-  default     = {}
-}
 EOF
 
 

@@ -22,13 +22,11 @@ cat > "${PROJECT_NAME}/main.tf" << 'EOF'
 EOF
 
 cat > "${PROJECT_NAME}/variables.tf" << 'EOF'
-variable "environment" {
-  description = "Environment name"
+variable "region" {
   type        = string
 }
 
-variable "project_name" {
-  description = "Project name"
+variable "profile" {
   type        = string
 }
 
@@ -53,20 +51,23 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  backend "s3" {}
 }
 
 provider "aws" {
   region  = var.region
+  profile = var.profile
 }
 EOF
 
 
-for env in dev prod staging; do
+for env in prod; do
     cat > "${PROJECT_NAME}/environment/${env}/backend.tfvars" << EOF
-bucket  = "tfstate-studies"
+bucket  = "${PROJECT_NAME}-bucket"
 key     = "${PROJECT_NAME}/${env}"
 region  = "us-east-1"
-profile = "eks-containers"
+profile = ${PROJECT_NAME}"
 EOF
 done
 
@@ -74,35 +75,32 @@ done
 cat > "${PROJECT_NAME}/Makefile" << 'EOF'
 .PHONY: init plan apply destroy
 
-ENV ?= dev
-AWS_PROFILE=eks-containers
-
 init:
-	AWS_PROFILE=$(AWS_PROFILE) terraform init -backend-config=environment/$(ENV)/backend.tfvars
+	terraform init -backend-config=environment/$(ENV)/backend.tfvars
 
 plan:
-	AWS_PROFILE=$(AWS_PROFILE) terraform plan -var-file=environment/$(ENV)/terraform.tfvars
+	terraform plan -var-file=environment/$(ENV)/terraform.tfvars
 
 apply:
-	AWS_PROFILE=$(AWS_PROFILE) terraform apply -var-file=environment/$(ENV)/terraform.tfvars
+	terraform apply -var-file=environment/$(ENV)/terraform.tfvars
 
 destroy:
-	AWS_PROFILE=$(AWS_PROFILE) terraform destroy -var-file=environment/$(ENV)/terraform.tfvars
+	terraform destroy -var-file=environment/$(ENV)/terraform.tfvars
 
 fmt:
-	AWS_PROFILE=$(AWS_PROFILE) terraform fmt -recursive
+	terraform fmt -recursive
 
 validate:
-	AWS_PROFILE=$(AWS_PROFILE) terraform validate
+	terraform validate
 EOF
 
 
-for env in dev prod staging; do
+for env in dev; do
     cat > "${PROJECT_NAME}/environment/${env}/terraform.tfvars" << EOF
 environment  = "${env}"
 project_name = "${PROJECT_NAME}"
 region       = "us-east-1"
-profile      = "eks-containers"
+profile      = "${PROJECT_NAME}"
 EOF
 done
 
